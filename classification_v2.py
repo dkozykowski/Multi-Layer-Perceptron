@@ -81,9 +81,7 @@ def full_forward_propagation(X, params_values, nn_architecture):
     return A_curr, memory
 
 def get_cost_value(Y_hat, Y):
-    
-	
-	# number of examples
+    # number of examples
     m = Y_hat.shape[1]
     # calculation of the cost according to the formula
     cost = -1 / m * (np.dot(Y, np.log(Y_hat).T) + np.dot(1 - Y, np.log(1 - Y_hat).T))
@@ -198,37 +196,34 @@ def train(X, Y, nn_architecture, epochs, learning_rate, verbose=False, callback=
             
     return params_values
 # number of samples in the data set
-N_SAMPLES = 100
+N_SAMPLES = 1000
 # ratio between training and test sets
 TEST_SIZE = 0.1
 
-#X, y = make_moons(n_samples = N_SAMPLES, noise=0.2, random_state=100)
-#X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SIZE, random_state=42)
-#params_values = train(np.transpose(X_train), np.transpose(y_train.reshape((y_train.shape[0], 1))), NN_ARCHITECTURE, 10000, 0.01)
-#Y_test_hat, _ = full_forward_propagation(np.transpose(X_test), params_values, NN_ARCHITECTURE)
-#acc_test = get_accuracy_value(Y_test_hat, np.transpose(y_test.reshape((y_test.shape[0], 1))))
-#print("Test set accuracy: {:.2f} - David".format(acc_test))
-
-dataset = pd.read_csv('./inputs/classification/data.simple.train.100.csv', sep=',').values
+dataset_train = pd.read_csv('./inputs/classification/data.simple.train.100.csv', sep=',').values
 dataset_test = pd.read_csv('./inputs/classification/data.simple.test.100.csv', sep=',').values
 
-n_inputs = len(dataset[0]) - 1
-n_outputs = len(set([row[-1] for row in dataset]))
+n_inputs = len(dataset_train[0]) - 1
+n_outputs = len(set([row[-1] for row in dataset_train]))
 
-X_train = dataset[:,0:2]
-y_train = dataset[:,2].astype(int) - 1
+X_train = dataset_train[:,0:2]
+y_train = dataset_train[:,2].astype(int) - 1
 
 X_test = dataset_test[:,0:2]
 y_test = dataset_test[:,2].astype(int) - 1
 
 NN_ARCHITECTURE = [
-    {"input_dim": n_inputs, "output_dim": 5, "activation": "sigmoid"},
-    {"input_dim": 5, "output_dim": 5, "activation": "sigmoid"},
-    {"input_dim": 5, "output_dim": 5, "activation": "sigmoid"},
-    {"input_dim": 5, "output_dim": n_outputs, "activation": "sigmoid"},
-    {"input_dim": n_outputs, "output_dim": 1, "activation": "sigmoid"},
+    {"input_dim": 2, "output_dim": 25, "activation": "relu"},
+    {"input_dim": 25, "output_dim": 50, "activation": "relu"},
+    {"input_dim": 50, "output_dim": 50, "activation": "relu"},
+    {"input_dim": 50, "output_dim": 25, "activation": "relu"},
+    {"input_dim": 25, "output_dim": 1, "activation": "sigmoid"},
 ]
-params_values = train(np.transpose(X_train), np.transpose(y_train.reshape((y_train.shape[0], 1))), NN_ARCHITECTURE, y_train.shape[0], 0.01)
+
+# X, y = make_moons(n_samples = N_SAMPLES, noise=0.2, random_state=100)
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SIZE, random_state=42)
+params_values = train(np.transpose(X_train), np.transpose(y_train.reshape((y_train.shape[0], 1))), NN_ARCHITECTURE, 10000, 0.01)
+
 Y_test_hat, _ = full_forward_propagation(np.transpose(X_test), params_values, NN_ARCHITECTURE)
 acc_test = get_accuracy_value(Y_test_hat, np.transpose(y_test.reshape((y_test.shape[0], 1))))
 print("Test set accuracy: {:.2f} - David".format(acc_test))
