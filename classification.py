@@ -19,18 +19,18 @@ neurons_per_layer_num = 5
 is_bias = False
 transfer = sigmoid
 
-def initialize_network(n_inputs, n_hidden, n_outputs):
-	network = list()
-	hidden_layer = [{'weights':[random() for i in range(n_inputs + 1)]} for i in range(n_hidden)]
-	network.append(hidden_layer)
-	output_layer = [{'weights':[random() for i in range(n_hidden + 1)]} for i in range(n_outputs)]
-	network.append(output_layer)
-	return network
+def initialize_network_weights(n_inputs, n_hidden, n_outputs):
+	network_weights = list()
+	hidden_layer = np.array([[random() for i in range(n_inputs + 1)] for i in range(n_hidden)])
+	network_weights.append(hidden_layer)
+	output_layer = np.array([[random() for i in range(n_hidden + 1)] for i in range(n_outputs)])
+	network_weights.append(output_layer)
+	return network_weights
 
 def activate(weights, inputs):
 	activation = weights[-1]
-	for i in range(len(weights)-1):
-		activation += weights[i] * inputs[i]
+	print(weights[:,:-1] @ inputs)
+	activation += np.dot(weights[:,:-1], inputs)
 	return activation
 
 def forward_propagate(network, row):
@@ -93,7 +93,7 @@ for row in dataset:
 	row[2] = int(row[2])-1
 n_inputs = len(dataset[0]) - 1
 n_outputs = len(set([row[-1] for row in dataset]))
-network = initialize_network(n_inputs, hidden_layers_num, n_outputs)
-train_network(network, dataset, 0.5, 20, n_outputs)
-for layer in network:
-	print(layer)
+network = initialize_network_weights(n_inputs, hidden_layers_num, n_outputs)
+# train_network(network, dataset, 0.5, 20, n_outputs)
+#for layer in network:
+#	print(layer)
