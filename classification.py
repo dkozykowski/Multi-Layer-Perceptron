@@ -8,8 +8,8 @@ INPUTS_DIRECTORY = './inputs/classification/'
 TRAIN_FILE = 'data.simple.train.100.csv'
 TEST_FILE = 'data.simple.test.100.csv'
 
-def sigmoid(Z):
-    return 1 / (1 + np.exp(-Z))
+def sigmoid(Z, derivative = False):
+    if not derivative: return 1 / (1 + np.exp(-Z))
 
 def relu(Z):
     return np.maximum(0, Z)
@@ -60,9 +60,7 @@ def full_forward_propagation(X, params_values, network_layers):
     return A_curr, memory
 
 def get_cost_value(Y_hat, Y):
-    m = Y_hat.shape[1]
-    cost = -1 / m * (np.dot(Y, np.log(Y_hat).T) + np.dot(1 - Y, np.log(1 - Y_hat).T))
-    return np.squeeze(cost)
+    return np.sum(np.square(Y - Y_hat))
 
 def convert_prob_into_class(probs):
     probs_ = np.copy(probs)
