@@ -3,7 +3,7 @@ import pandas as pd
 
 SEED = 10101
 EPOCHS = 10000
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.1
 INPUTS_DIRECTORY = './inputs/classification/'
 TRAIN_FILE = 'data.simple.train.100.csv'
 TEST_FILE = 'data.simple.test.100.csv'
