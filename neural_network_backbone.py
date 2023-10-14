@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 
 SILENT = True
+ACCURACY_FUNC = None
 
 def sigmoid(Z, derivative = False):
     if not derivative: return 1 / (1 + np.exp(-Z))
@@ -58,16 +59,6 @@ def full_forward_propagation(X, params_values, network_layers):
 def get_cost_value(Y_hat, Y):
     return np.sum(np.square(Y - Y_hat))
 
-def convert_prob_into_class(probs):
-    probs_ = np.copy(probs)
-    probs_[probs_ > 0.5] = 1
-    probs_[probs_ <= 0.5] = 0
-    return probs_
-
-def get_accuracy_value(Y_hat, Y):
-    Y_hat_ = convert_prob_into_class(Y_hat)
-    return (Y_hat_ == Y).all(axis=0).mean()
-
 def single_layer_backward_propagation(dA_curr, W_curr, b_curr, Z_curr, A_prev, activation="relu"):
     m = A_prev.shape[1]
     if activation == "relu":
@@ -115,7 +106,7 @@ def train(X, Y, network_layers, epochs, learning_rate, seed):
     for i in range(epochs):
         Y_hat, cashe = full_forward_propagation(X, params_values, network_layers)
         cost = get_cost_value(Y_hat, Y)
-        accuracy = get_accuracy_value(Y_hat, Y)
+        accuracy = ACCURACY_FUNC(Y_hat, Y)
         accuracy_history.append(accuracy)
         grads_values = full_backward_propagation(Y_hat, Y, cashe, params_values, network_layers)
         params_values = update(params_values, grads_values, network_layers, learning_rate)
