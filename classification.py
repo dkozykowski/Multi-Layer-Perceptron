@@ -20,6 +20,9 @@ def get_accuracy_value(Y_hat, Y):
     Y_hat_ = convert_prob_into_class(Y_hat)
     return (Y_hat_ == Y).all(axis=0).mean()
 
+def get_cost_value(Y_hat, Y):
+    return np.sum(np.square(Y - Y_hat))
+
 dataset_train = pd.read_csv(INPUTS_DIRECTORY  + TRAIN_FILE, sep=',').values
 dataset_test = pd.read_csv(INPUTS_DIRECTORY + TEST_FILE, sep=',').values
 
@@ -34,12 +37,13 @@ y_test = dataset_test[:,2].astype(int) - 1
 
 network_layers = [
     {"nodes": n_inputs},
-    {"nodes": 5, "activation": "relu"},
-    {"nodes": 1, "activation": "sigmoid"},
+    {"nodes": 5, "activation": nnb.relu},
+    {"nodes": 1, "activation": nnb.sigmoid},
 ]
 
 nnb.SILENT = SILENT
 nnb.ACCURACY_FUNC = get_accuracy_value
+nnb.COST_FUNC = get_cost_value
 params_values = nnb.train(np.transpose(X_train), np.transpose(y_train.reshape((y_train.shape[0], 1))), 
                           network_layers, EPOCHS, LEARNING_RATE, SEED)
 Y_test_hat, _ = nnb.full_forward_propagation(np.transpose(X_test), params_values, network_layers)

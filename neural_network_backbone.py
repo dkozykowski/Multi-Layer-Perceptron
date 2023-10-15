@@ -1,23 +1,30 @@
 import numpy as np
-import pandas as pd
 
 SILENT = True
 ACCURACY_FUNC = None
+COST_FUNC = None
 
 def sigmoid(Z, derivative = False):
-    if not derivative: return 1 / (1 + np.exp(-Z))
+    sig = 1 / (1 + np.exp(-Z))
+    if not derivative:
+        return sig
+    else:
+        return sig * (1 - sig)
 
-def relu(Z):
-    return np.maximum(0, Z)
+def relu(Z, derivative = False):
+    if not derivative:
+        return np.maximum(0, Z)
+    else:
+        dZ = np.array(Z, copy = True)
+        dZ[Z <= 0] = 0
+        dZ[Z > 0] = 1
+        return dZ
 
-def sigmoid_backward(dA, Z):
-    sig = sigmoid(Z)
-    return dA * sig * (1 - sig)
-
-def relu_backward(dA, Z):
-    dZ = np.array(dA, copy = True)
-    dZ[Z <= 0] = 0
-    return dZ
+def linear(Z, derivative = False):
+    if not derivative:
+        return Z
+    else:
+        return np.ones_like(Z)
 
 def init_layers(network_layers, seed):
     np.random.seed(seed)
@@ -32,14 +39,8 @@ def init_layers(network_layers, seed):
             current_layer_nodes, 1) * 0.1
     return params_values
 
-def single_layer_forward_propagation(A_prev, W_curr, b_curr, activation):
+def single_layer_forward_propagation(A_prev, W_curr, b_curr, activation_func):
     Z_curr = np.dot(W_curr, A_prev) + b_curr
-    if activation == "relu":
-        activation_func = relu
-    elif activation == "sigmoid":
-        activation_func = sigmoid
-    else:
-        raise Exception('Non-supported activation function')
     return activation_func(Z_curr), Z_curr
 
 def full_forward_propagation(X, params_values, network_layers):
@@ -56,18 +57,9 @@ def full_forward_propagation(X, params_values, network_layers):
         memory["Z" + str(i)] = Z_curr
     return A_curr, memory
 
-def get_cost_value(Y_hat, Y):
-    return np.sum(np.square(Y - Y_hat))
-
-def single_layer_backward_propagation(dA_curr, W_curr, b_curr, Z_curr, A_prev, activation="relu"):
+def single_layer_backward_propagation(dA_curr, W_curr, b_curr, Z_curr, A_prev, activation_func):
     m = A_prev.shape[1]
-    if activation == "relu":
-        backward_activation_func = relu_backward
-    elif activation == "sigmoid":
-        backward_activation_func = sigmoid_backward
-    else:
-        raise Exception('Non-supported activation function')
-    dZ_curr = backward_activation_func(dA_curr, Z_curr)
+    dZ_curr = np.multiply(activation_func(Z_curr, derivative = True), dA_curr)
     dW_curr = np.dot(dZ_curr, A_prev.T) / m
     db_curr = np.sum(dZ_curr, axis=1, keepdims=True) / m
     dA_prev = np.dot(W_curr.T, dZ_curr)
@@ -75,7 +67,6 @@ def single_layer_backward_propagation(dA_curr, W_curr, b_curr, Z_curr, A_prev, a
 
 def full_backward_propagation(Y_hat, Y, memory, params_values, network_layers):
     grads_values = {}
-    m = Y.shape[1]
     Y = Y.reshape(Y_hat.shape)
     dA_prev = - (np.divide(Y, Y_hat) - np.divide(1 - Y, 1 - Y_hat))
     layers_number = len(network_layers)
@@ -105,7 +96,7 @@ def train(X, Y, network_layers, epochs, learning_rate, seed):
     
     for i in range(epochs):
         Y_hat, cashe = full_forward_propagation(X, params_values, network_layers)
-        cost = get_cost_value(Y_hat, Y)
+        cost = COST_FUNC(Y_hat, Y)
         accuracy = ACCURACY_FUNC(Y_hat, Y)
         accuracy_history.append(accuracy)
         grads_values = full_backward_propagation(Y_hat, Y, cashe, params_values, network_layers)
