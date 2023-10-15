@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import neural_network_backbone as nnb
-from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_absolute_percentage_error as mape
 
 SILENT = False
 SEED = 10101
@@ -12,10 +12,10 @@ TRAIN_FILE = 'data.activation.train.100.csv'
 TEST_FILE = 'data.activation.test.100.csv'
 
 def get_accuracy_value(Y_hat, Y):
-    return 0
+    return mape(Y, Y_hat)
 
 def get_cost_value(Y_hat, Y):
-    return np.sqrt(np.sum(np.square(Y - Y_hat)) / len(Y))
+    return np.sqrt(np.sum(np.square(Y - Y_hat)) / Y.size)
 
 dataset_train = pd.read_csv(INPUTS_DIRECTORY  + TRAIN_FILE, sep=',').values
 dataset_test = pd.read_csv(INPUTS_DIRECTORY + TEST_FILE, sep=',').values
@@ -32,6 +32,7 @@ y_test = dataset_test[:,1]
 
 network_layers = [
     {"nodes": n_inputs},
+    {"nodes": 5, "activation": nnb.relu},
     {"nodes": 5, "activation": nnb.relu},
     {"nodes": 1, "activation": nnb.linear},
 ]

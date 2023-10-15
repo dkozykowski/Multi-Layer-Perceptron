@@ -22,9 +22,9 @@ def relu(Z, derivative = False):
 
 def linear(Z, derivative = False):
     if not derivative:
-        return Z
+        return np.array(Z, copy = True)
     else:
-        return np.ones_like(Z)
+        return np.ones(shape=Z.shape) 
 
 def init_layers(network_layers, seed):
     np.random.seed(seed)
@@ -33,10 +33,9 @@ def init_layers(network_layers, seed):
     for i in range(1, layers_number):
         previous_layer_nodes = network_layers[i - 1]["nodes"]
         current_layer_nodes = network_layers[i]["nodes"]
-        params_values['W' + str(i)] = np.random.randn(
-            current_layer_nodes, previous_layer_nodes) * 0.1
-        params_values['b' + str(i)] = np.random.randn(
-            current_layer_nodes, 1) * 0.1
+        params_values['W' + str(i)] = np.random.randn(current_layer_nodes, 
+                                                      previous_layer_nodes) * 0.1
+        params_values['b' + str(i)] = np.random.randn(current_layer_nodes, 1) * 0.1
     return params_values
 
 def single_layer_forward_propagation(A_prev, W_curr, b_curr, activation_func):
@@ -61,14 +60,15 @@ def single_layer_backward_propagation(dA_curr, W_curr, b_curr, Z_curr, A_prev, a
     m = A_prev.shape[1]
     dZ_curr = np.multiply(activation_func(Z_curr, derivative = True), dA_curr)
     dW_curr = np.dot(dZ_curr, A_prev.T) / m
-    db_curr = np.sum(dZ_curr, axis=1, keepdims=True) / m
+    db_curr = np.sum(dZ_curr, axis = 1, keepdims = True) / m
     dA_prev = np.dot(W_curr.T, dZ_curr)
     return dA_prev, dW_curr, db_curr
 
 def full_backward_propagation(Y_hat, Y, memory, params_values, network_layers):
     grads_values = {}
     Y = Y.reshape(Y_hat.shape)
-    dA_prev = - (np.divide(Y, Y_hat) - np.divide(1 - Y, 1 - Y_hat))
+    maxx = np.max(Y)
+    dA_prev = - (np.divide(Y, Y_hat) - np.divide(maxx - Y, maxx - Y_hat))
     layers_number = len(network_layers)
     for i in reversed(range(1, layers_number)):
         activ_function_curr = network_layers[i]["activation"]
