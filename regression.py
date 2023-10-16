@@ -1,21 +1,35 @@
 import numpy as np
 import pandas as pd
 import neural_network_backbone as nnb
-from sklearn.metrics import mean_absolute_percentage_error as mape
+from sklearn.metrics import mean_absolute_percentage_error as r2_score
 
 SILENT = False
 SEED = 10101
 EPOCHS = 10000
-LEARNING_RATE = 0.1
+LEARNING_RATE = 0.3
 INPUTS_DIRECTORY = './inputs/regression/'
 TRAIN_FILE = 'data.activation.train.100.csv'
 TEST_FILE = 'data.activation.test.100.csv'
 
-def get_accuracy_value(Y_hat, Y):
-    return mape(Y, Y_hat)
+def norm(X):
+    X -= np.min(X)
+    X /= np.max(X)
+    X *= 2
+    X -= 1
+    return X
 
-def get_cost_value(Y_hat, Y):
-    return np.sqrt(np.sum(np.square(Y - Y_hat)) / Y.size)
+def get_accuracy_value(Y_hat, Y):
+    return r2_score(Y, Y_hat)
+
+# def get_cost_value(Y_hat, Y, derivative = False):
+#     return np.sqrt(np.sum(np.square(Y - Y_hat)) / Y.size)
+
+def get_cost_value(Y_hat, Y, derivative = False):
+    if not derivative:
+        m = Y.shape[1]
+        return 1 / m * np.sum(np.square(Y - Y_hat))
+    else:
+        return -2 * (Y - Y_hat)
 
 dataset_train = pd.read_csv(INPUTS_DIRECTORY  + TRAIN_FILE, sep=',').values
 dataset_test = pd.read_csv(INPUTS_DIRECTORY + TEST_FILE, sep=',').values
@@ -23,18 +37,16 @@ dataset_test = pd.read_csv(INPUTS_DIRECTORY + TEST_FILE, sep=',').values
 n_inputs = len(dataset_train[0]) - 1
 n_outputs = 1
 
-X_train = dataset_train[:,0:1]
-y_train = dataset_train[:,1]
+X_train = norm(dataset_train[:,0:1])
+y_train = norm(dataset_train[:,1])
 
-X_test = dataset_test[:,0:1]
-y_test = dataset_test[:,1]
-
+X_test = norm(dataset_test[:,0:1])
+y_test = norm(dataset_test[:,1])
 
 network_layers = [
     {"nodes": n_inputs},
-    {"nodes": 5, "activation": nnb.relu},
-    {"nodes": 5, "activation": nnb.relu},
-    {"nodes": 1, "activation": nnb.linear},
+    {"nodes": 5, "activation": nnb.tanh},
+    {"nodes": 1, "activation": nnb.tanh},
 ]
 
 nnb.SILENT = SILENT

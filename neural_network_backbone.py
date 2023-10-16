@@ -25,6 +25,12 @@ def linear(Z, derivative = False):
         return np.array(Z, copy = True)
     else:
         return np.ones(shape=Z.shape) 
+    
+def tanh(Z, derivative = False):
+    if not derivative:
+        return np.tanh(Z)
+    else:
+        return 1.0 - np.tanh(Z)**2
 
 def init_layers(network_layers, seed):
     np.random.seed(seed)
@@ -67,9 +73,8 @@ def single_layer_backward_propagation(dA_curr, W_curr, b_curr, Z_curr, A_prev, a
 def full_backward_propagation(Y_hat, Y, memory, params_values, network_layers):
     grads_values = {}
     Y = Y.reshape(Y_hat.shape)
-    maxx = np.max(Y)
-    dA_prev = - (np.divide(Y, Y_hat) - np.divide(maxx - Y, maxx - Y_hat))
     layers_number = len(network_layers)
+    dA_prev = COST_FUNC(Y_hat, Y, True)
     for i in reversed(range(1, layers_number)):
         activ_function_curr = network_layers[i]["activation"]
         dA_curr = dA_prev
