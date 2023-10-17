@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import neural_network_backbone as nnb
+from sklearn.metrics import accuracy_score 
 
 SILENT = False
 SEED = 10101
@@ -15,24 +16,26 @@ def get_progress(Y_hat, Y):
     accuracy = get_accuracy_value(Y_hat, Y)
     return "cost: {:.5f} - accuracy: {:.5f}".format(cost, accuracy)
 
+def one_hot(Y, num_classes):
+    return np.squeeze(np.eye(num_classes)[Y.reshape(-1)])
+
 def convert_prob_into_class(probs):
-    probs_ = np.copy(probs)
-    probs_[probs_ > 0.5] = 1
-    probs_[probs_ <= 0.5] = 0
-    return probs_
+    return np.array([[1. if prob == max(v) else 0. for prob in v] for v in probs]).reshape(probs.shape)
 
 def get_accuracy_value(Y_hat, Y):
-    Y_hat_ = convert_prob_into_class(Y_hat)
-    return (Y_hat_ == Y).all(axis=0).mean()
+    Y = one_hot(Y, n_outputs)
+    Y_hat_ = convert_prob_into_class(Y_hat.T)
+    return accuracy_score(Y, Y_hat_)
 
 def get_cost_value(Y_hat, Y, derivative = False):
+    Y = one_hot(Y, n_outputs)
     if not derivative:
-        m = Y_hat.shape[1]
-        cost = -1 / m * (np.dot(Y, np.log(Y_hat).T) + np.dot(1 - Y, np.log(1 - Y_hat).T))
-        return np.squeeze(cost)
+        eps = 1e-15
+        Y_hat = np.clip(Y_hat, eps, 1. - eps)
+        return -np.mean(Y * np.log(Y_hat.T) + (1. - Y) * np.log(1. - Y_hat.T))
     else:
-        return - (np.divide(Y, Y_hat) - np.divide(1 - Y, 1 - Y_hat))
-
+        return Y_hat.T - Y
+    
 dataset_train = pd.read_csv(INPUTS_DIRECTORY  + TRAIN_FILE, sep=',').values
 dataset_test = pd.read_csv(INPUTS_DIRECTORY + TEST_FILE, sep=',').values
 
@@ -48,7 +51,7 @@ y_test = dataset_test[:,2].astype(int) - 1
 network_layers = [
     {"nodes": n_inputs},
     {"nodes": 5, "activation": nnb.relu},
-    {"nodes": 1, "activation": nnb.sigmoid},
+    {"nodes": n_outputs, "activation": nnb.softmax}
 ]
 
 nnb.SILENT = SILENT

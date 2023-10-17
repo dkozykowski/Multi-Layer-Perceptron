@@ -34,6 +34,14 @@ def tanh(Z, derivative = False):
         return np.tanh(Z)
     else:
         return 1.0 - np.tanh(Z)**2
+    
+def softmax(Z, derivative = False):
+    if not derivative:
+        return np.exp(Z) / sum(np.exp(Z))
+    else:
+        E = np.exp(Z)
+        S = sum(E)
+        return (S - E) * E / (S ** 2)
 
 def init_layers(network_layers, seed):
     np.random.seed(seed)
@@ -41,7 +49,7 @@ def init_layers(network_layers, seed):
     layers_number = len(network_layers)
     for i in range(1, layers_number):
         previous_layer_nodes = network_layers[i - 1]["nodes"]
-        current_layer_nodes = network_layers[i]["nodes"]
+        current_layer_nodes = network_layers[i]["nodes"]    
         params_values['W' + str(i)] = np.random.randn(current_layer_nodes, 
                                                       previous_layer_nodes) * 0.1
         params_values['b' + str(i)] = np.random.randn(current_layer_nodes, 1) * 0.1
@@ -75,9 +83,8 @@ def single_layer_backward_propagation(dA_curr, W_curr, b_curr, Z_curr, A_prev, a
 
 def full_backward_propagation(Y_hat, Y, memory, params_values, network_layers):
     grads_values = {}
-    Y = Y.reshape(Y_hat.shape)
     layers_number = len(network_layers)
-    dA_prev = COST_FUNC(Y_hat, Y, True)
+    dA_prev = COST_FUNC(Y_hat, Y, True).T
     for i in reversed(range(1, layers_number)):
         activ_function_curr = network_layers[i]["activation"]
         dA_curr = dA_prev
