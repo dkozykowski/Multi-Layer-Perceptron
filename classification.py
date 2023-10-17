@@ -10,6 +10,11 @@ INPUTS_DIRECTORY = './inputs/classification/'
 TRAIN_FILE = 'data.simple.train.100.csv'
 TEST_FILE = 'data.simple.test.100.csv'
 
+def get_progress(Y_hat, Y):
+    cost = get_cost_value(Y_hat, Y)
+    accuracy = get_accuracy_value(Y_hat, Y)
+    return "cost: {:.5f} - accuracy: {:.5f}".format(cost, accuracy)
+
 def convert_prob_into_class(probs):
     probs_ = np.copy(probs)
     probs_[probs_ > 0.5] = 1
@@ -20,8 +25,13 @@ def get_accuracy_value(Y_hat, Y):
     Y_hat_ = convert_prob_into_class(Y_hat)
     return (Y_hat_ == Y).all(axis=0).mean()
 
-def get_cost_value(Y_hat, Y):
-    return np.sum(np.square(Y - Y_hat))
+def get_cost_value(Y_hat, Y, derivative = False):
+    if not derivative:
+        m = Y_hat.shape[1]
+        cost = -1 / m * (np.dot(Y, np.log(Y_hat).T) + np.dot(1 - Y, np.log(1 - Y_hat).T))
+        return np.squeeze(cost)
+    else:
+        return - (np.divide(Y, Y_hat) - np.divide(1 - Y, 1 - Y_hat))
 
 dataset_train = pd.read_csv(INPUTS_DIRECTORY  + TRAIN_FILE, sep=',').values
 dataset_test = pd.read_csv(INPUTS_DIRECTORY + TEST_FILE, sep=',').values
@@ -42,10 +52,9 @@ network_layers = [
 ]
 
 nnb.SILENT = SILENT
-nnb.ACCURACY_FUNC = get_accuracy_value
 nnb.COST_FUNC = get_cost_value
+nnb.PROGRESS_FUNC = get_progress
 params_values = nnb.train(np.transpose(X_train), np.transpose(y_train.reshape((y_train.shape[0], 1))), 
                           network_layers, EPOCHS, LEARNING_RATE, SEED)
 Y_test_hat, _ = nnb.full_forward_propagation(np.transpose(X_test), params_values, network_layers)
-acc_test = get_accuracy_value(Y_test_hat, np.transpose(y_test.reshape((y_test.shape[0], 1))))
-print("Test set accuracy: {:.2f}".format(acc_test))
+print("Test set: " + get_progress(Y_test_hat, np.transpose(y_test.reshape((y_test.shape[0], 1)))))

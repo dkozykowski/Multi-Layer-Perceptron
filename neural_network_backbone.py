@@ -1,8 +1,8 @@
 import numpy as np
 
 SILENT = True
-ACCURACY_FUNC = None
 COST_FUNC = None
+PROGRESS_FUNC = None
 
 def sigmoid(Z, derivative = False):
     sig = 1 / (1 + np.exp(-Z))
@@ -97,16 +97,10 @@ def update(params_values, grads_values, network_layers, learning_rate):
 
 def train(X, Y, network_layers, epochs, learning_rate, seed):
     params_values = init_layers(network_layers, seed)
-    accuracy_history = []
-    
     for i in range(epochs):
         Y_hat, cashe = full_forward_propagation(X, params_values, network_layers)
-        cost = COST_FUNC(Y_hat, Y)
-        accuracy = ACCURACY_FUNC(Y_hat, Y)
-        accuracy_history.append(accuracy)
         grads_values = full_backward_propagation(Y_hat, Y, cashe, params_values, network_layers)
         params_values = update(params_values, grads_values, network_layers, learning_rate)
         if not SILENT and i % (epochs / 50) == 0:
-            print("Iteration: {:05} - cost: {:.5f} - accuracy: {:.5f}".format(i, cost, accuracy))
-            
+            print("Iteration: {:05} - ".format(i) + PROGRESS_FUNC(Y_hat, Y))
     return params_values
