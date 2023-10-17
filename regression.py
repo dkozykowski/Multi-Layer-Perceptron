@@ -11,13 +11,6 @@ INPUTS_DIRECTORY = './inputs/regression/'
 TRAIN_FILE = 'data.activation.train.100.csv'
 TEST_FILE = 'data.activation.test.100.csv'
 
-def norm(X):
-    X -= np.min(X)
-    X /= np.max(X)
-    X *= 2
-    X -= 1
-    return X
-
 def get_accuracy_value(Y_hat, Y):
     return r2_score(Y, Y_hat)
 
@@ -37,11 +30,17 @@ dataset_test = pd.read_csv(INPUTS_DIRECTORY + TEST_FILE, sep=',').values
 n_inputs = len(dataset_train[0]) - 1
 n_outputs = 1
 
-X_train = norm(dataset_train[:,0:1])
-y_train = norm(dataset_train[:,1])
+X_train = dataset_train[:,0:1]
+y_train = dataset_train[:,1]
+miniY = np.min(y_train)
+y_train -= miniY
+maxiY = np.max(y_train)
+y_train /= maxiY
+y_train *= 2
+y_train -= 1
 
-X_test = norm(dataset_test[:,0:1])
-y_test = norm(dataset_test[:,1])
+X_test = dataset_test[:,0:1]
+y_test = ((dataset_test[:,1] - miniY) / maxiY) * 2 - 1
 
 network_layers = [
     {"nodes": n_inputs},
