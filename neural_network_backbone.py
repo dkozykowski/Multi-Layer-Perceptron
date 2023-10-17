@@ -1,4 +1,7 @@
 import numpy as np
+import shutil
+import os
+import pickle
 
 SILENT = True
 COST_FUNC = None
@@ -104,3 +107,32 @@ def train(X, Y, network_layers, epochs, learning_rate, seed):
         if not SILENT and i % (epochs / 50) == 0:
             print("Iteration: {:05} - ".format(i) + PROGRESS_FUNC(Y_hat, Y))
     return params_values
+
+def save_model(network_layers, params_values, filename):
+    network_layers_filename = filename + "/network_layers.npy"
+    params_values_filename = filename + "/params_values.npy"
+    os.makedirs(os.path.dirname(network_layers_filename))
+    with open(network_layers_filename, 'wb') as f:
+        pickle.dump(network_layers, f)
+    with open(params_values_filename, 'wb') as f:
+        pickle.dump(params_values, f)
+    shutil.make_archive(filename, 'zip', filename)
+    cleanup(filename)
+
+def load_model(filename):
+    network_layers_filename = filename + "/network_layers.npy"
+    params_values_filename = filename + "/params_values.npy"
+    shutil.unpack_archive(filename + ".zip", filename, "zip")
+    with open(network_layers_filename, 'rb') as f:
+        network_layers = pickle.load(f)
+    with open(params_values_filename, 'rb') as f:
+       params_values = pickle.load(f)
+    cleanup()
+    return network_layers, params_values
+    
+def cleanup(filename):
+    network_layers_filename = filename + "/network_layers.npy"
+    params_values_filename = filename + "/params_values.npy"
+    os.remove(network_layers_filename)
+    os.remove(params_values_filename)
+    os.rmdir(filename)
