@@ -50,7 +50,7 @@ network_layers = [
 nnb.SILENT = SILENT
 nnb.COST_FUNC = get_cost_value
 nnb.PROGRESS_FUNC = get_progress
-params_values = nnb.train(np.transpose(X_train), np.transpose(y_train.reshape((y_train.shape[0], 1))), 
+params_values = nnb.train(X_train, y_train.reshape((y_train.shape[0], 1)), 
                           network_layers, EPOCHS, LEARNING_RATE, SEED)
 Y_test_hat, _ = nnb.full_forward_propagation(np.transpose(X_test), params_values, network_layers)
 print("Test set: " + get_progress(Y_test_hat, np.transpose(y_test.reshape((y_test.shape[0], 1)))))

@@ -1,3 +1,4 @@
+from sklearn.utils import gen_batches, shuffle
 import numpy as np
 import shutil
 import os
@@ -105,14 +106,23 @@ def update(params_values, grads_values, network_layers, learning_rate):
         params_values["b" + str(i)] -= learning_rate * grads_values["db" + str(i)]
     return params_values
 
-def train(X, Y, network_layers, epochs, learning_rate, seed):
+def train(X, Y, network_layers, epochs, learning_rate, seed, batch_size = 0):
     params_values = init_layers(network_layers, seed)
     for i in range(epochs):
-        Y_hat, cashe = full_forward_propagation(X, params_values, network_layers)
-        grads_values = full_backward_propagation(Y_hat, Y, cashe, params_values, network_layers)
-        params_values = update(params_values, grads_values, network_layers, learning_rate)
-        if not SILENT and i % (epochs / 50) == 0:
-            print("Iteration: {:05} - ".format(i) + PROGRESS_FUNC(Y_hat, Y))
+        if batch_size == 0:
+            batch_size = X.shape[0]
+
+        X, Y = shuffle(X, Y)
+        for slice in gen_batches(X.shape[0], batch_size):
+            X_ = np.array(X[slice]).T
+            Y_ = np.array(Y[slice]).T
+            Y_hat, cashe = full_forward_propagation(X_, params_values, network_layers)
+            grads_values = full_backward_propagation(Y_hat, Y_, cashe, params_values, network_layers)
+            params_values = update(params_values, grads_values, network_layers, learning_rate)
+        
+        Y_hat, _ = full_forward_propagation(X.T, params_values, network_layers)
+        if not SILENT and i % max(0, int(epochs / 50)) == 0:
+            print("Iteration: {:05} - ".format(i) + PROGRESS_FUNC(Y_hat, Y.T))
     return params_values
 
 def save_model(network_layers, params_values, filename):
