@@ -7,6 +7,7 @@ import pickle
 SILENT = True
 COST_FUNC = None
 PROGRESS_FUNC = None
+EPS = np.finfo(np.float32).eps
 
 def sigmoid(Z, derivative = False):
     sig = 1 / (1 + np.exp(-Z))
@@ -42,7 +43,7 @@ def softmax(Z, derivative = False):
     else:
         E = np.exp(Z)
         S = sum(E)
-        return (S - E) * E / (S ** 2)
+        return (S - E) * E / (S ** 2 + EPS)
 
 def init_layers(network_layers, seed):
     np.random.seed(seed)
