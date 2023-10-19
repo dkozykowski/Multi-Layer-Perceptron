@@ -121,7 +121,7 @@ def train(X, Y, network_layers, epochs, learning_rate, seed, batch_size = 0):
             params_values = update(params_values, grads_values, network_layers, learning_rate)
         
         Y_hat, _ = full_forward_propagation(X.T, params_values, network_layers)
-        if not SILENT and i % max(0, int(epochs / 50)) == 0:
+        if not SILENT and i % max(1, int(epochs / 50)) == 0:
             print("Iteration: {:05} - ".format(i) + PROGRESS_FUNC(Y_hat, Y.T))
     return params_values
 

@@ -13,7 +13,7 @@ The Neural Network is capable of handling batched, vectorized calculations and s
 
 ## Results
 
-Model trained on [MNIST](http://yann.lecun.com/exdb/mnist/) after Y epochs scores X accuracy without use of any augmentation methods.
+Model trained on [MNIST](http://yann.lecun.com/exdb/mnist/) after 60 epochs scores 97% accuracy without use of any augmentation methods.
 
 ## Author
 
