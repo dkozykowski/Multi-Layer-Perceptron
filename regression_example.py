@@ -21,7 +21,7 @@ def get_cost_value(Y_hat, Y, derivative = False):
         m = Y.shape[1]
         return 1 / m * np.sum(np.square(Y - Y_hat))
     else:
-        return -2 * (Y - Y_hat)
+        return (Y_hat - Y).T
 
 dataset_train = pd.read_csv(INPUTS_DIRECTORY  + TRAIN_FILE, sep=',').values
 dataset_test = pd.read_csv(INPUTS_DIRECTORY + TEST_FILE, sep=',').values
