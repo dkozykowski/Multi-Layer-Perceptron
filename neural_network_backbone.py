@@ -7,6 +7,7 @@ import pickle
 SILENT = True
 COST_FUNC = None
 PROGRESS_FUNC = None
+USE_BIAS = True
 EPS = np.finfo(np.float32).eps
 
 def sigmoid(Z, derivative = False):
@@ -58,7 +59,7 @@ def init_layers(network_layers, seed):
     return params_values
 
 def single_layer_forward_propagation(A_prev, W_curr, b_curr, activation_func):
-    Z_curr = np.dot(W_curr, A_prev) + b_curr
+    Z_curr = np.dot(W_curr, A_prev) + (b_curr if USE_BIAS else 0.0)
     return activation_func(Z_curr), Z_curr
 
 def full_forward_propagation(X, params_values, network_layers):
